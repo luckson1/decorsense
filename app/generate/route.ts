@@ -1,13 +1,13 @@
 import { Ratelimit } from "@upstash/ratelimit";
-import redis from "../../utils/redis";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { redis } from "@/lib/utils";
 
 // Create a new ratelimiter, that allows 5 requests per 24 hours
 const ratelimit = redis
   ? new Ratelimit({
       redis: redis,
-      limiter: Ratelimit.fixedWindow(5, "1440 m"),
+      limiter: Ratelimit.fixedWindow(100, "1440 m"),
       analytics: true,
     })
   : undefined;
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
             ? "a room for gaming with gaming computers, gaming consoles, and gaming chairs"
             : `a ${theme.toLowerCase()} ${room.toLowerCase()}`,
         a_prompt:
-          "best quality, extremely detailed, photo from Pinterest, interior, cinematic photo, ultra-detailed, ultra-realistic, award-winning",
+          "best quality, extremely detailed, photo from Pinterest, photo from Houzz, interior, cinematic photo, ultra-detailed, ultra-realistic, award-winning",
         n_prompt:
           "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
       },

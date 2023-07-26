@@ -1,3 +1,4 @@
+import { roomType, themeType } from "@/lib/utils";
 import { Menu, Transition } from "@headlessui/react";
 import {
   CheckIcon,
@@ -5,7 +6,6 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import { Fragment } from "react";
-import { roomType, themeType } from "../utils/dropdownTypes";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
