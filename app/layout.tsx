@@ -3,7 +3,7 @@ import "@/styles/globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { fontSans } from "@/lib/fonts";
 import { Metadata } from "next";
-
+import {cookies} from "next/headers"
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/config";
@@ -11,13 +11,16 @@ import { ThemeProvider } from "@/components/providers";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster as DefaultToaster } from "@/components/ui/toaster";
 import { Toaster as NewYorkToaster } from "@/components/ui/toaster";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import SessionCheck from "@/components/session_check";
 const title= {
   default: siteConfig.name,
   template: `%s - ${siteConfig.name}`,
 }
 const description = siteConfig.description
 let ogimage = "https://roomgpt-demo.vercel.app/og-image.png";
-let sitename = siteConfig.name;
+
 
 export const metadata: Metadata = {
 title,
@@ -55,11 +58,14 @@ keywords: ["Interior Decor", "interior Design", "AI", "Artificial Intelligent an
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase=createServerComponentClient({cookies})
+  const {data: {session}}= await supabase.auth.getSession()
+
   return (
     <>
     <html lang="en" suppressHydrationWarning>
@@ -70,14 +76,17 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        <SessionCheck session={session}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="relative flex min-h-screen flex-col">
+              {/* @ts-expect-error Server Component */}
             <SiteHeader />
             <div className="flex-1">{children}</div>
        
           </div>
           <TailwindIndicator />
         </ThemeProvider>
+        </SessionCheck>
         <NewYorkToaster />
         <DefaultToaster />
       </body>

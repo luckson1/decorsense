@@ -7,7 +7,7 @@ import { UploadDropzone } from "react-uploader";
 import { Uploader } from "uploader";
 import Footer from "../../components/Footer";
 import ResizablePanel from "../../components/ResizablePanel";;
-import { appendNewToName, downloadPhoto, roomType, themeType, rooms, themes, cn } from "../../lib/utils";
+import {  roomType, themeType, rooms, themes, cn } from "../../lib/utils";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { ErrorMessage } from "@hookform/error-message";
+import ToolTipComponent from "@/components/ui/tooltip_component";
 
 // Configuration for the uploader
 const uploader = Uploader({
@@ -54,16 +55,16 @@ export default function DreamPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [photoName, setPhotoName] = useState<string | null>(null);
-const roomSchema=z.object({imageUrl:z.string(), room:z.enum([  'living room'
-, 'dining room'
+const roomSchema=z.object({imageUrl:z.string(), room:z.enum([  'living_room'
+, 'dining_room'
 , 'bedroom'
 , 'bathroom'
 , 'office'
-, 'gaming room']).refine((val)=> val===  'dining room'
+, 'gaming_room']).refine((val)=> val===  'dining_room'
 ||'bedroom'
 ||'bathroom'
 ||'office'
-||'gaming room', {
+||'gamin_room', {
   message: "You have to select at least one room item.",
 }),
 themes: z.array(z.enum([   'Modern'
@@ -71,7 +72,7 @@ themes: z.array(z.enum([   'Modern'
 , 'Contemporary'
 , 'Farmhouse'
 , 'Rustic'
-,"Mid Century"
+,"MidCentury"
 ,"Mediterranean"
 ,"Industrial"
 ,"Scandinavian"])).refine((value) => value.some((theme) => theme), {
@@ -89,37 +90,38 @@ const originalImage=watch('imageUrl')
 
 async function generatePhotos({imageUrl, themes, room}:{imageUrl: string, themes: themeType[], room: roomType}) {
   await new Promise((resolve) => setTimeout(resolve, 200));
-  setLoading(true);
+  setLoading(true)
 
-  const requests = themes.map((theme) =>
-    fetch("/generate", {
+Promise.all(
+   themes.map(async(theme)=> {
+  
+    setLoading(true);
+    const res = await fetch("/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ imageUrl, theme, room }),
-    })
-  );
-
-  try {
-    const responses = await Promise.all(requests);
-    const jsonResponses = await Promise.all(responses.map((res) => res.json()));
-
-    const restoredImages = themes.map((theme, index) => ({
-      theme,
-      url: jsonResponses[index][1],
-    }));
-
-    setRestoredImages(restoredImages); // Assuming you have a state variable to store the images
-    setError(null);
-  } catch (error) {
-    setError("Failed to restore images");
-  } finally {
-    setLoading(false);
-  }
+    });
+   
+    let newPhoto = await res.json() as string;      
+    if (res.status !== 200) {
+      setError(newPhoto);
+    } else {
+      const newRestoredImages= restoredImages? [...restoredImages, {theme, url: newPhoto}]: [{theme, url: newPhoto}]
+     
+     
+      setRestoredImages(newRestoredImages)
+    }
+    setTimeout(() => {
+      setLoading(false);
+    }, 1300);
+   })
+  )
 }
 
   return (
+    
     <div className="flex max-w-7xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
       <main className="flex flex-1 w-full flex-col items-center justify-center text-center px-4 mt-4 sm:mb-0 mb-8">
   
@@ -165,10 +167,11 @@ async function generatePhotos({imageUrl, themes, room}:{imageUrl: string, themes
               {!!originalImage &&  <Card className="h-[20rem] w-full max-w-xs max-h-full m-5" >
     <CardContent className="w-full h-full flex justify-center items-center flex-col relative">
      <Image src={originalImage} alt="room" fill className="rounded-lg"/>
+     <ToolTipComponent content="Change image" >
   <Button size={'icon'} className="absolute top-5" onClick={()=>resetField('imageUrl')}>
   <Trash />
   </Button>
-   
+  </ToolTipComponent>
     </CardContent>
   </Card>}
                   </div>
@@ -176,7 +179,7 @@ async function generatePhotos({imageUrl, themes, room}:{imageUrl: string, themes
                   <div className="space-y-4 w-full max-w-sm flex flex-col">
                   
                 
-              <Label className="w-full max-w-xs text-start">Language</Label>
+              <Label className="w-full max-w-xs text-start">Room type</Label>
           <Controller
           name="room"
           
@@ -196,7 +199,7 @@ async function generatePhotos({imageUrl, themes, room}:{imageUrl: string, themes
                   )}
                 >
                   {field.value
-                    ? field.value
+                    ? field.value.replace(/_/g, ' ').replace(/^\w/, (match) => match.toUpperCase())
                     : "Select room theme"}
                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -297,9 +300,13 @@ async function generatePhotos({imageUrl, themes, room}:{imageUrl: string, themes
                     
                   </div>
               <div className="w-full flex justify-start"> 
-              <Button className="mt-5 w-full max-w-xs" size={'lg'} role="submit" >
+         
+            <Button className="mt-5 w-full max-w-xs" size={'lg'} role="submit" >
                    {loading? "Loading....": " Get Ideas"}
                   </Button>
+                  
+        
+            
               </div>
                
                 </form>
@@ -353,106 +360,6 @@ restoredImages.map(restoredImage=> (
 }
            </div>
            </div>
-              {/* <div
-                className={`${
-                  restoredLoaded ? "visible mt-6 -ml-8" : "invisible"
-                }`}
-              >
-                <Toggle
-                  className={`${restoredLoaded ? "visible mb-6" : "invisible"}`}
-                  sideBySide={sideBySide}
-                  setSideBySide={(newVal) => setSideBySide(newVal)}
-                />
-              </div>
-              {restoredLoaded && sideBySide && (
-                <CompareSlider
-                  original={originalPhoto!}
-                  restored={restoredImage!}
-                />
-              )}
-            
-              {originalPhoto && !restoredImage && (
-                <Image
-                  alt="original photo"
-                  src={originalPhoto}
-                  className="rounded-2xl h-96"
-                  width={475}
-                  height={475}
-                />
-              )}
-              {restoredImage && originalPhoto && !sideBySide && (
-                <div className="flex sm:space-x-4 sm:flex-row flex-col">
-                  <div>
-                    <h2 className="mb-1 font-medium text-lg">Original Room</h2>
-                    <Image
-                      alt="original photo"
-                      src={originalPhoto}
-                      className="rounded-2xl relative w-full h-96"
-                      width={475}
-                      height={475}
-                    />
-                  </div>
-                  <div className="sm:mt-0 mt-8">
-                    <h2 className="mb-1 font-medium text-lg">Generated Room</h2>
-                    <a href={restoredImage} target="_blank" rel="noreferrer">
-                      <Image
-                        alt="restored photo"
-                        src={restoredImage}
-                        className="rounded-2xl relative sm:mt-0 mt-2 cursor-zoom-in w-full h-96"
-                        width={475}
-                        height={475}
-                        onLoadingComplete={() => setRestoredLoaded(true)}
-                      />
-                    </a>
-                  </div>
-                </div>
-              )}
-              {loading && (
-                <button
-                  disabled
-                  className="bg-blue-500 rounded-full  font-medium px-4 pt-2 pb-3 mt-8 w-40"
-                >
-                  <span className="pt-4">
-                    <LoadingDots color="white" style="large" />
-                  </span>
-                </button>
-              )}
-              {error && (
-                <div
-                  className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mt-8"
-                  role="alert"
-                >
-                  <span className="block sm:inline">{error}</span>
-                </div>
-              )}
-              <div className="flex space-x-2 justify-center">
-                {originalPhoto && !loading && (
-                  <button
-                    onClick={() => {
-                      setOriginalPhoto(null);
-                      setRestoredImage(null);
-                      setRestoredLoaded(false);
-                      setError(null);
-                    }}
-                    className="bg-blue-500 rounded-full  font-medium px-4 py-2 mt-8 hover:bg-blue-500/80 transition"
-                  >
-                    Generate New Room
-                  </button>
-                )}
-                {restoredLoaded && (
-                  <button
-                    onClick={() => {
-                      downloadPhoto(
-                        restoredImage!,
-                        appendNewToName(photoName!)
-                      );
-                    }}
-                    className="bg-white rounded-full border font-medium px-4 py-2 mt-8  transition"
-                  >
-                    Download Generated Room
-                  </button>
-                )}
-              </div> */}
             </motion.div>
           </AnimatePresence>
         </ResizablePanel>

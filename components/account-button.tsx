@@ -16,15 +16,22 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "./ui/dropdown-menu"
-  import { Separator } from "./ui/separator"
 import { Icons } from "./icons"
 import Link from "next/link"
 
 import { useRouter } from "next/navigation"
+import { type Session, createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
   
-  export function Account() {
-const auth=false
+  export function Account({session}:{session: Session | null}) {
+    const supabase = createClientComponentClient()
+ 
+
+const handleSignOut = async () => {
+  await supabase.auth.signOut()
+  router.refresh()
+ router.replace('/auth')
+}
     const router=useRouter()
     return (
     
@@ -54,15 +61,15 @@ const auth=false
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
             <Link href={'/auth'} className="w-full">
-          {  !auth && <Button className="w-full" onClick={  ()=> { router.replace('/auth')}}>
+          {  !session && <Button className="w-full" onClick={  ()=> { router.replace('/auth')}}>
             Login
              </Button>}
-             {  auth && <Button className="w-full bg-destructive hover:bg-opacity-30 hover:bg-destructive" onClick={  ()=> { router.replace('/auth')}}>
+             {  session && <Button className="w-full bg-destructive hover:bg-opacity-30 hover:bg-destructive" onClick={  handleSignOut}>
             Logout
              </Button>}
             </Link>
                 </DropdownMenuItem>
-           {!auth && <>
+           {!session && <>
             <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />

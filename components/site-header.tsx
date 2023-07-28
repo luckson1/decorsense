@@ -1,17 +1,17 @@
 import Link from "next/link";
 
 
-
+import {cookies} from "next/headers"
 
 import { Account } from "./account-button";
 import { MainNav } from "./main-nav";
-import { MobileNav } from "./mobile-nav";
-import { cn } from "../lib/utils";
-import { buttonVariants } from "./ui/button";
-import { Icons } from "./icons";
+import { MobileNav } from "./mobile-nav";;
 import { ModeToggle } from "./mode-toggle";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const supabase=createServerComponentClient({cookies})
+  const {data: {session}}= await supabase.auth.getSession()
   return (
     <header className="supports-backdrop-blur:bg-background/60 sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur bg">
       <div className="container flex h-14 items-center">
@@ -23,7 +23,7 @@ export function SiteHeader() {
           </div>
           <nav className="flex items-center space-x-2">
        
-            <Account />
+            <Account session={session}/>
 
             <ModeToggle />
           </nav>
