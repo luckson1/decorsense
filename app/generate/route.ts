@@ -96,9 +96,9 @@ export async function POST(request: Request) {
               ? "a room for gaming with gaming computers, gaming consoles, and gaming chairs"
               : `a ${theme.toLowerCase()} ${room.toLowerCase()}`,
           a_prompt:
-            "best quality, extremely detailed, photo from Pinterest, photo from Houzz, interior, cinematic photo, ultra-detailed, ultra-realistic, award-winning, high definition",
+            "best quality, intricate detail, award winning design, daylight, extremely detailed, photo from Pinterest, photo from Houzz, interior, cinematic photo, ultra-detailed, ultra-realistic, award-winning, high definition, hyperealistic, ",
           n_prompt:
-            "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+            "longbody, lens blur, apartment photography, luxury market, photorealistic, 8K, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face",
         },
       },
       {
