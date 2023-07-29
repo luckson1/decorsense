@@ -12,7 +12,8 @@ import { SiteHeader } from "@/components/site-header";
 import { Toaster as DefaultToaster } from "@/components/ui/toaster";
 import { Toaster as NewYorkToaster } from "@/components/ui/toaster";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { usePathname, useRouter } from "next/navigation";
+export const dynamic = 'force-static'
+export const revalidate = 60
 import SessionCheck from "@/components/session_check";
 const title= {
   default: siteConfig.name,

@@ -12,6 +12,7 @@ import Client from './components/Client';
 
 
 
+
 async function getImages (){
      const res = await (await import('./../images/route')).GET()
     return res.json()
